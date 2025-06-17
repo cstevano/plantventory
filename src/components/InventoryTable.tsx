@@ -11,25 +11,35 @@ import {
 import { Input } from "./ui/input";
 import { useState } from "react";
 import { Combobox } from "./ui/combo-box";
+import { getPlants } from "@/actions/plant.action";
 
-const plants = [
-  {
-    id: 1231,
-    name: "Snake Plant",
-    category: "Indoor",
-    price: 2,
-    stock: 14,
-  },
-];
+type Plant = Awaited<ReturnType<typeof getPlants>>;
 
-export default function InventoryTable() {
+interface InventoryTableProps {
+  plants: Plant;
+}
+
+export default function InventoryTable({ plants }: InventoryTableProps) {
   const [selectedCategory, setSelectedCategory] = useState("");
+  const [searchTerm, setSearchTerm] = useState("");
+
+  // filter plants by name and category (if selected)
+  const filteredPlants = plants?.userPlants?.filter(
+    (plant: any) =>
+      plant.name.toLowerCase().includes(searchTerm.toLowerCase()) &&
+      (selectedCategory === "" || plant.category === selectedCategory)
+  );
 
   return (
     <div className="w-full">
       <div className="flex items-center gap-2 py-4">
         <div className="relative max-w-screen-sm w-full">
-          <Input placeholder="Filter plants..." className="pl-10" />
+          <Input
+            placeholder="Filter plants..."
+            className="pl-10"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+          />
         </div>
         <Combobox
           value={selectedCategory}
@@ -47,7 +57,7 @@ export default function InventoryTable() {
           </TableRow>
         </TableHeader>
         <TableBody>
-          {plants.map((plant) => (
+          {filteredPlants.map((plant: any) => (
             <TableRow key={plant.id}>
               <TableCell>{plant.name}</TableCell>
               <TableCell>{plant.category}</TableCell>
